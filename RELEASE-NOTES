@@ -1,0 +1,48 @@
+0.1     Aug 11, 2022
+    - original
+
+0.2     Aug 12, 2022
+    - fixed bug in while loop.  needed next instead of continue
+    - created Makefile
+    - added -s/--show-success flag
+    - added more comments
+    - added RELEASE-NOTES
+    - created test config file: test.conf
+
+0.3     Aug 13, 2022:
+    update-ddns.plx:
+        - change location of user config file from
+            ${home}/.update-ddns.conf
+          to
+            ${home}/.config/update-ddns/update-ddns.conf
+    Makefile:
+        - updated to not clobber config file if it already
+          exists in the target location.
+        - now checks that all necessary directories exist and creates
+          them if needed.
+        - updated for new config file location
+
+0.4     Aug 14, 2022:
+    update-ddns.plx:
+        - added -o/--only option
+
+0.5     Aug 15, 2022:
+    update-ddns.plx:
+        - specify which method tried when there is an error with 
+          Moxad::Rcommand::run_command_wait()
+        - -o/--only option can also now take comma separated values
+        - wrote perldoc documentation
+        - fixed error in usage for -f|--ip-file
+    README.md:
+    README.first:
+        - created
+    man/man1/update-ddns.1:
+        - wrote man page
+    Makefile:
+        - smarter handling of config file installation.
+          don't over-write if target already installed
+        - added manpage target to install manpage
+
+1.0     Aug 17, 2022:
+    switching now from RCS to git for inclusion into Github
+    keep RCS history just in case.  Have git ignore RCS

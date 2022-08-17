@@ -1,0 +1,249 @@
+.TH update-ddns 1
+.SH NAME
+update-ddns \- update DNS records at your DNS service provider
+.SH SYNOPSIS
+.B update-ddns [option]*
+.SH OPTIONS
+.TP
+\fB-c|--config\fR config-file
+Provide a different config file to be used instead of any of the other
+default locations.
+.TP
+\fB\-d|--debug\fR
+Provide debug output to help trace a problem or understand an unexpected
+behaviour. If the debug flag is given more than once, it will also turn on
+debugging in the Moxad::Rcommand and Moxad::Config modules.
+.TP
+\fB-f|--ip-file\fR filename
+Change the file that the IP number is saved to that gets compared each run
+to see if your ISP changed your dynamic IP number. The hard-coded default
+is ${HOME}/etc/update-ddns--IP-number. This is then over-ridden by
+whatever 'save-ip-number' is set to in the config file. And that is
+over-ridden by this option.
+.TP
+\fB\-h|--help\fR
+Print out options of the program, also showing some defaults
+.TP
+\fB\-i|--ip-num\fR IP-number
+Supply an IP number to use instead of using the methods in the config file
+to look up what IP number is currently assigned by your ISP. If this
+option is used, it will behave as if you got it via normal methods, and
+then checked against the IP number that is stored in 'save-ip-number'. And
+so if they are different, it will then save that different number. Unless
+the -n|--no-save-ip option is used.
+.TP
+\fB\-l|--lib-dir\fR directory
+Change the library directory where your library is located to handle
+talking to your DNS provider. It is normally set in the config file
+using 'library-directory'. This option will over-ride that. The hard-coded value
+in the program is ${HOME}/lib/Perl.
+.TP
+\fB\-n|--nosave-ip\fR
+Don't save the IP number into the file given with 'save-ip-number' in the
+config file.
+.TP
+\fB\-o|--only\fR hostname[,hostname]*
+Restrict the hosts to update to those given with this option. In order for
+any of them to be used, they have to be listed in the config file
+under 'hostnames'. The hosts can be comma separated, or the option can be used
+multiple times with one or more hosts.
+.TP
+\fB\-p|--provider\fR string
+This will change which provider library you wish to use. The default
+hard-coded value is 'zoneedit'. This is over-ridden in the config file
+with the 'service-provider'. This option over-rides both.
+.TP
+\fB\-r|--randomize\fR
+Pick a random method listed under 'methods' in the config file, to start
+with when trying to get the IP number. If each method is failing, loop
+back to the start of the list if the last one is reached and fails. Stop
+after all methods are tried.
+.TP
+\fB\-s|--show-success\fR
+Normally if an IP address is successfully updated at the DNS provider, the
+program is silent. This will print a message showing that the IP number
+changed and that the update succeeded, if this option is used.
+.TP
+\fB\-t|--timeout\fR seconds
+Change the timeout to the given value. The hard-coded default is 30
+seconds. This is over-ridden by any value in the config file given by 'timeout'.
+This option will override them both.
+.TP
+\fB\-F|--force-update\fR
+This option will force an update at the DNS provider even if the program
+determines that your IP address has not changed. Note that for some
+providers, like zoneedit, if it sees that the IP number is already that
+value, then it may return an error saying that.
+.TP
+\fB\-V|--version\fR
+Print the version numbers of this program as well as the Moxad modules
+that it uses.
+.SH EXAMPLES
+.TP
+update-ddns --help
+show options available
+.TP
+update-ddns --only test1.moxad.net,test2.moxad.ca
+This will only try to update the two hostnames of test1.moxad.net and
+test2.moxad.ca out of the entire list given by 'hostnames' in the
+config file
+.TP
+update-ddns --show-success
+This will provide an indication to STDOUT when the program was
+successful. Normally it is silent with success. But given the very few
+times your dynamic IP address will change, it will be rare and you may
+wish to know it changed.
+.SH DESCRIPTION
+.I update-ddns
+does DNS updates for one or more hosts at your DNS provider.
+It is typically run from the crontab periodically - like every half hour.
+It's primary value is that you can be away from home and depend on
+reaching your internal network/servers at home when your dynamic IP
+number, provided by your ISP, changes.
+.PP
+It can update several hostnames in a single run for different domains,
+each which may or may not have different authentication userid/passwords
+for a single new IP number. For eg: for the 3 hosts in the 3 domains of
+home.moxad.com, home.moxad.net and home.moxad.ca. It keeps track of the IP
+number from the last run and if there is no change, then the program does
+nothing and exits.
+.PP
+You can specify several methods to get the external dynamic IP number
+assigned by your ISP. If one method fails, others will be tried until all
+are tried before giving up. You can specify to randomize where in that
+list to start cycling from, in case you don't want to be always using the
+first on the list and seen by that provider as over-using their free
+resourse to do a IP lookup on your connection.
+.PP
+The first time run, it will notice that you do not yet have
+a 'save-ip-number' file to store the IP number. It will create this file,
+with your IP number, and exit. The next time it is run, it will compare
+the value found in that file to your current assigned IP number.
+.PP
+Note that at this time, only IPv4 is supported.
+.PP
+Note that currently the only DNS service provider supported is Zoneedit.
+But that library/function can be copied to a new library and slightly
+modified to use their expected URL input and to process their output to
+determine success or failure.  See section \fISUPPORT FOR OTHER DNS PROVIDERS\fR
+.PP
+Use -h or --help for options
+.SH SUPPORT FOR OTHER DNS PROVIDERS
+The config file specifies a 'service-provider'. It can be any string,
+ideally the name of your provider. For eg: 'zoneedit'. It uses this string
+to look for the library <string>.pl in the directory given in the config
+file with 'library-directory' and then dynamically loads it.
+.PP
+That library file is expected to have a function called update_ddns(). In
+this way, this code base can remain the same while someone can create
+their own new library/function that is specific for their provider and
+their API.
+.PP
+To create a new library for your provider (if it is not provided here),
+you can just copy the existing zoneedit.pl library and make a small number
+of changes to match their expected input URL, and process their output
+returned to determine success or failure. It is expected that 90% of the
+code in the new copied library can remain untouched. Call that new library
+a meaningful name and point your config file to it by changing 'service-provider'.
+.SH DNS PROVIDER LIBRARY API
+The API for the library to talk to your DNS provider is that the inputs are:
+.PP
+   \fBuserid, password, hostname-to-update, new-IP-address, timeout\fR
+.PP
+The output is either 0 (OK) or 1 (not OK).
+.PP
+If it is not OK (1), it is expected that error messages will be sent to
+STDERR
+.PP
+At this time of creation, the only provided library is zoneedit.pl which
+understands their API. That function can be used as a guide for creating
+other library functions for other providers which should only differ in
+the (REST) URL that is sent, and processing the output back to determine
+success or failure.
+.PP
+The directory where the library is found is given in the config file with 'library-directory'.
+.SH REQUIREMENTS
+.I update-ddns
+uses the Moxad::Config module to handle human-readable config files. This
+is available at https://github.com/rjwhite/Perl-config-module
+.PP
+.I update-ddns
+uses the Moxad::Rcommand module to separate STDIN and STDERR into separate
+streams and to handle a timeout to avoid hung services. This is available
+at https://github.com/rjwhite/Perl-run-command
+.SH CONFIG FILE
+The program looks in several places to find the config file. Of the list
+of places it finds a config file, it will use the last on the list that
+has an existing file. That list of places to look is:
+.PP
+    - ${HOME}/.config/update-ddns/update-ddns.conf
+    - The environment variable UPDATE_DDNS_CONFIG_FILE
+    - update-ddns.conf in the current directory
+    - given by option -c or --config
+.PP
+So the -c or --config option will over-ride any other config files found
+if the file exists.
+.SH Config file example
+.nf
+# The userid and password are arrays.  The size is determined by the
+# size of the data given by the hostnames.  If the number of values
+# given by the userid or password is less than the number of hostnames,
+# then the missing values will be filled with the last given value.
+# So, if the userid is the same for say 3 hostnames, but each hostname
+# to be updated has a different password, then only one value need be
+# given for the userid.
+
+authentication:
+    userid   (array)    = my_userid
+    password (array)    = API-password-1, \\
+                          API-password-2, \\
+                          API-password-3
+
+# These are methods to use to get the IP number assigned by our ISP.
+# If randomize-methods is set to yes, then the program will pick
+# a method at random to start at.  If it does not get a result that
+# looks like an IP number then another method will be tried, until
+# all are tried and fail.
+
+get-ip-number:
+    methods  (array)    = curl -s icanhazip.com, \\
+                          curl -s ifconfig.me, \\
+                          curl -s 'https://api.ipify.org', \\
+                          curl -s 'http://checkip.dyndns.org' | \\
+                             sed 's/.*Current IP Address: \([0-9\.]*\).*/\1/g'
+    randomize-methods   = yes
+
+hosts:
+    hostnames (array)   = home.my-domain.ca, \\
+                          home.my-domain.com, \\
+                          home.my-domain.net
+
+files:
+    save-ip-number      = /home/my-userid/etc/update-ddns--IP-number
+    library-directory   = /home/my-userid/lib/Perl
+
+# The 'service-provider' is the name of the library found in your 
+# library-directory.  So 'zoneedit' will be zoneedit.pl
+# You can call it anything you want but it is recommended that it
+# be a meaningful name to represent your DNS provider
+
+protocol:
+    service-provider    = zoneedit
+
+timeout:
+    timeout             = 20
+.fi
+.SH ENVIRONMENT VARIABLES
+UPDATE_DDNS_CONFIG_FILE
+.br
+If the environment variable \fIUPDATE_DDNS_CONFIG_FILE\fR is set,
+and if the file exists, it will be used instead of the default
+${HOME}/.config/update-ddns/update-ddns.conf - unless it is over-ridden
+by the config file \fIupdate-ddns.conf\fR in the current directory, or if the
+options -c or --config is used.
+.SH AUTHOR
+RJ White
+.br
+rj.white@moxad.com
+.br
+Moxad Enterprises Inc.

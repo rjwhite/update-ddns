@@ -1,0 +1,36 @@
+There are 3 type of documentation for this program:
+    - there is a traditional man page (man 1 update-ddns)
+    - there is the perldoc  (perldoc update-ddns.plx)
+    - there is the mark-down README.md file as shown on Github
+
+To install, change the target locations at the top of the Makefile,
+and then:
+    make install
+
+The Makefile is designed only for user level installs.
+I can think of no reason why you'd need or want to install this 
+as root but that is easy to change if you like.
+
+To add support for your DNS provider - if it is not Zoneedit - please
+see the man-page or perldoc section of "SUPPORT FOR OTHER DNS PROVIDERS"
+
+If you want to see what the program is doing, or if it has behaviour
+you didn't expect, or you want to make sure it's silent behaviour is
+really doing what you expect, then use the debug option (-d or --debug).
+
+You probably would want to run this from your crontab.  
+My entry to run every hour is:
+    43 * * * *  /home/rj/bin/update-ddns --show-success
+
+The config file in the source directory is not meant to be your on-going
+revision controlled version, but only your initial version that is 
+installed once.  The Makefile will not install it if it sees the target
+location already exists.  So maintain your target version in place and
+do any revision control there.  I have conflicting views on this choice,
+but the reason I did it this way is so you don't accidently over-write
+the target with an older version if you made more recent changes to the
+target and neglected to update your source version.  I've seen too many 
+people at jobs that don't bother to keep the source up to date and
+just update the targets - which causes problems when someone else who
+does follow the rules comes along and inadvertently over-writes the
+target version.
