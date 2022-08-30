@@ -46,3 +46,11 @@
 1.0     Aug 17, 2022:
     switching now from RCS to git for inclusion into Github
     keep RCS history just in case.  Have git ignore RCS
+
+1.1     Aug 29, 2022:
+    update-ddns.plx:
+        - get_our_ip_number() has inconsistent returns between
+          errors and non-errors.  Also reworked for better error
+          handling.
+    README.md:
+         -typo fixed

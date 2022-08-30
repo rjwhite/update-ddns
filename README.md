@@ -21,7 +21,7 @@ assigned by your ISP.  If one method fails, others will be tried until all
 are tried before giving up.  You can specify to randomize where in that
 list to start cycling from, in case you don't want to be always using
 the first on the list and seen by that provider as over-using their free
-resourse to do a IP lookup on your connection.
+resource to do a IP lookup on your connection.
 
 The first time run, it will notice that you do not yet have a
 'save-ip-number' file to store the IP number.  It will create this file,

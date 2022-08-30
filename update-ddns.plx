@@ -68,7 +68,7 @@ use LWP::UserAgent();
 
 # Globals 
 our $G_progname = $0 ;
-our $G_version  = "1.0" ;
+our $G_version  = "1.1" ;
 our $G_debug    = 0 ;
 
 # Constants
@@ -505,17 +505,18 @@ sub save_old_ip {
 
 
 # get our IP number
-#   cycles through a number of methods, given in the confif file, to
+#   cycles through a number of methods, given in the config file, to
 #   get the IP number.  Tries one at a time until it sees a valid
-#   looking IPv4 number until all are tried.
+#   looking IPv4 number until all are tried.  Either returns a valid
+#   IPv4 number or undefined.
 #
 # Arguments:
 #   1:  reference to an array of methods to try - from config file
 #   2:  flag on whether to randomize where to start in methods list
 #   3:  timeout in seconds - in case a lookup hangs
 # Returns:
-#   0:  OK
-#   1:  not OK
+#   IPv4 number - OK
+#   undefined   - not OK
 # Globals:
 #   $G_progname
 
@@ -527,16 +528,16 @@ sub get_our_ip_number {
     my $start_method_indx = 0 ;
     my @methods_used = () ;
     my $num_methods_tried = 0 ;
-    my $num_methods = @{$methods_ref} ;
     my $ip_number = undef ;
 
     my $sub_name = (caller(0))[3] . "()" ;
 
-    dprint( "$sub_name: we have $num_methods methods to get our IP number" ) ;
     if (( ref( $methods_ref ) eq "" ) or ( ref( $methods_ref ) ne "ARRAY" )) {
         print STDERR "$G_progname: 1st arg to $sub_name is not an array reference\n" ;
-        return(1) ;
+        return( $ip_number ) ;
     }
+    my $num_methods = @{$methods_ref} ;
+    dprint( "$sub_name: we have $num_methods methods to get our IP number" ) ;
 
     if ( $random_flag ) {
         $start_method_indx = int( rand( $num_methods ) ) ;
