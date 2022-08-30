@@ -112,7 +112,7 @@ The directory where the library is found is given in the config file with
 uses the Moxad::Config module to handle human-readable config files. This
 is available at https://github.com/rjwhite/Perl-config-module
 
-uses the Moxad::Rcommand module to separate STDIN and STDERR into separate
+uses the Moxad::Rcommand module to separate STDOUT and STDERR into separate
 streams and to handle a timeout to avoid hung services. This is available
 at https://github.com/rjwhite/Perl-run-command
 

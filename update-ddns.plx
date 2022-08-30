@@ -68,7 +68,7 @@ use LWP::UserAgent();
 
 # Globals 
 our $G_progname = $0 ;
-our $G_version  = "1.1" ;
+our $G_version  = "1.1.1" ;
 our $G_debug    = 0 ;
 
 # Constants
