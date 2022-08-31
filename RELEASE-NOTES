@@ -59,3 +59,7 @@
     README.md:
         - fixed description of Moxad::Rcommand usage.  
           said STDIN instead of STDOUT
+
+1.1.2   Aug 31, 2022:
+    README.md:
+        - had to escape <string> to \<string\>

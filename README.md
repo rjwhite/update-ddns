@@ -72,7 +72,7 @@ out of the entire list given by 'hostnames' in the config file
 # Support for other DNS providers
 The config file specifies a 'service-provider'. It can be any string,
 ideally the name of your provider. For eg: 'zoneedit'. It uses this string
-to look for the library <string>.pl in the directory given in the config
+to look for the library \<string\>.pl in the directory given in the config
 file with 'library-directory' and then dynamically loads it.
 
 That library file is expected to have a function called update_ddns(). In
