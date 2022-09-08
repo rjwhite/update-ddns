@@ -1,36 +1,70 @@
-There are 3 type of documentation for this program:
-    - there is a traditional man page (man 1 update-ddns)
-    - there is the perldoc  (perldoc update-ddns.plx)
-    - there is the mark-down README.md file as shown on Github
+REQUIREMENTS:
+    The program requires 2 other Perl modules.  One is for handling the config
+    file and the other is for the handling of STDOUT and STDERR and timeouts
+    when running external commands - such as looking up your IP number.
+    Those 2 modules can be obtained at:
+        https://github.com/rjwhite/Perl-config-module
+        https://github.com/rjwhite/Perl-run-command
 
-To install, change the target locations at the top of the Makefile,
-and then:
-    make install
+    This program expects those two modules to be intsalled in:
+        /usr/local/Moxad/lib/Moxad
+    ie:
+        /usr/local/Moxad/lib/Moxad/Config.pm
+        /usr/local/Moxad/lib/Moxad/Rcommand.pm
+    That will almost certainly require a root user to install them.
+    Or, you can install them in some appropriate directory in your HOME account.
+    In which case, you will need to change the line in the program:
+        use lib "/usr/local/Moxad/lib" ;
+    to the appropriate directory.  Note above that it does not have the 2nd
+    "Moxad" at the end of that line because the program supplies that with:
+        use Moxad::Config ;
+        use Moxad::Rcommand
 
-The Makefile is designed only for user level installs.
-I can think of no reason why you'd need or want to install this 
-as root but that is easy to change if you like.
+DOCUMENTATION:
+    There are 3 types of documentation for this program:
+        - there is a traditional man page (man 1 update-ddns)
+        - there is the perldoc  (perldoc update-ddns.plx)
+        - there is the mark-down README.md file as shown on Github
 
-To add support for your DNS provider - if it is not Zoneedit - please
-see the man-page or perldoc section of "SUPPORT FOR OTHER DNS PROVIDERS"
+INSTALLATION:
+    To install, change the target locations at the top of the Makefile,
+    and then:
+        make install
 
-If you want to see what the program is doing, or if it has behaviour
-you didn't expect, or you want to make sure it's silent behaviour is
-really doing what you expect, then use the debug option (-d or --debug).
+    The Makefile is designed only for user level installs.
+    I can think of no reason why you'd need or want to install this 
+    program as root but that is easy to change if you like.  The required
+    modules as mentioned above under "REQUIREMENTS" may require root to
+    install in their default location - but this program has no special
+    needs for root.
 
-You probably would want to run this from your crontab.  
-My entry to run every hour is:
-    43 * * * *  /home/rj/bin/update-ddns --show-success
+OTHER DNS PROVIDERS (than zoneedit):
+    To add support for your DNS provider - if it is not Zoneedit - please
+    see the man-page or perldoc section of "SUPPORT FOR OTHER DNS PROVIDERS"
+        man 1 update-ddns
+        perldoc update-ddns.plx
 
-The config file in the source directory is not meant to be your on-going
-revision controlled version, but only your initial version that is 
-installed once.  The Makefile will not install it if it sees the target
-location already exists.  So maintain your target version in place and
-do any revision control there.  I have conflicting views on this choice,
-but the reason I did it this way is so you don't accidently over-write
-the target with an older version if you made more recent changes to the
-target and neglected to update your source version.  I've seen too many 
-people at jobs that don't bother to keep the source up to date and
-just update the targets - which causes problems when someone else who
-does follow the rules comes along and inadvertently over-writes the
-target version.
+DEBUGGING:
+    If you want to see what the program is doing, or if it has behavior
+    you didn't expect, or you want to make sure it's silent behavior is
+    really doing what you expect, then use the debug option (-d or --debug).
+
+PERIODIC AUTOMATIC RUNNING:
+    You probably would want to run this from your crontab.  
+    My entry to run every hour is:
+        43 * * * *  /home/rj/bin/update-ddns --show-success
+
+CONFIG FILE ONLY INSTALLED ONCE:
+    The config file in the source directory is not meant to be your on-going
+    revision controlled version, but only your initial version that is 
+    installed once.  The Makefile will not install it if it sees the target
+    location already exists.  So maintain your target version in place and
+    do any revision control there.
+
+    I have conflicting views on this choice, but the reason I did it this
+    way is so you don't accidently over-write the target with an older
+    version if you made more recent changes to the target and neglected
+    to update your source version.  I've seen too many people at companies
+    that don't bother to keep the source up to date and just update the
+    targets - which causes problems when someone else who does follow the
+    rules comes along and inadvertently over-writes the target version.
