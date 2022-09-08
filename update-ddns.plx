@@ -8,7 +8,7 @@
 # on reaching your internal network/servers at home when your
 # dynamic IP number, provided by your ISP, changes.
 
-# Looks for the 1st existing config file it finds in the list of:
+# Looks for the *last* existing config file it finds in the list of:
 #   - $ENV{ HOME }/.config/update-ddns/update-ddns.conf
 #   - $ENV{ UPDATE_DDNS_CONFIG_FILE }
 #   - update-ddns.conf  in current directory
@@ -68,7 +68,7 @@ use LWP::UserAgent();
 
 # Globals 
 our $G_progname = $0 ;
-our $G_version  = "1.1.3" ;
+our $G_version  = "1.1.4" ;
 our $G_debug    = 0 ;
 
 # Constants

@@ -69,3 +69,7 @@
         - overhauled.  mostly to cover requirements
     update-ddns.plx:
         - updated misleading comments about config file location
+
+1.1.4   Sep 8, 2022:
+    update-ddns.plx:
+        - ARRRRGGG !!! updated misleading comments AGAIN...
