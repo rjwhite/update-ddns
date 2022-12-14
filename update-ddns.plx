@@ -68,7 +68,7 @@ use LWP::UserAgent();
 
 # Globals 
 our $G_progname = $0 ;
-our $G_version  = "1.1.4" ;
+our $G_version  = "1.2" ;
 our $G_debug    = 0 ;
 
 # Constants
@@ -551,6 +551,8 @@ sub get_our_ip_number {
 
     my $method_indx = $start_method_indx ;
     dprint( "$sub_name: using a timeout of $timeout secs" ) ;
+    my $num_warnings = 0 ;
+    my $last_method_tried = undef ;
     while ( $num_methods_tried < $num_methods ) {
         $num_methods_tried++ ;
         my $method = ${$methods_ref}[ $method_indx ] ;
@@ -568,12 +570,14 @@ sub get_our_ip_number {
         $method_indx++ ;
         $method_indx = 0 if ( $method_indx >= $num_methods ) ;
 
+        $last_method_tried = $method ;
         my $errs = run_command_wait( $method, \@output, \@errors, \%options ) ;
         if ( $errs ) {
             foreach my $err ( @errors ) {
                 chomp( $err ) ;
                 print STDERR "$G_progname: $err\n" ;
                 print STDERR "$G_progname: method tried was: $method\n" ;
+                $num_warnings++ ;
             }
             # keep going anyway
         }
@@ -595,6 +599,10 @@ sub get_our_ip_number {
     }
     if ( defined( $ip_number )) {
         dprint( "$sub_name: Got final IP number of \'$ip_number\'" ) ;
+        if ( $num_warnings ) {
+            my $msg = "had success with method: $last_method_tried" ;
+            print STDERR "$G_progname: $msg\n" ;
+        }
     } else {
         dprint( "$sub_name: could not get an IP number" ) ;
     }

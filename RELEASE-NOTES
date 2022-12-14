@@ -73,3 +73,16 @@
 1.1.4   Sep 8, 2022:
     update-ddns.plx:
         - ARRRRGGG !!! updated misleading comments AGAIN...
+
+1.2     Dec 14, 2022:
+    update-ddns.plx:
+        - made it clear that if successfully ran after it prints out an
+          error that it had a problem with one of the methods, such as:
+                "...Got a timeout after X seconds ..."
+                "...method tried was: <whatever>
+          by printing a closing message of:
+                "...had success with method: <whatever>
+          If it completely fails to get the IP number after trying all 
+          methods, it will still end with the message:
+                "...unable to get our IP number from Internet"
+          so it will now be clear if it worked or failed.
