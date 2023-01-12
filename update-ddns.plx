@@ -68,7 +68,7 @@ use LWP::UserAgent();
 
 # Globals 
 our $G_progname = $0 ;
-our $G_version  = "1.2" ;
+our $G_version  = "1.2.1" ;
 our $G_debug    = 0 ;
 
 # Constants
@@ -112,6 +112,7 @@ sub main {
     my $help_flag    = 0 ;
     my $force_update_flag = 0 ;
     my $only_hosts_flag = 0 ;
+    my $show_ip_num_flag = 0 ;
     my $save_ip_to_file_flag = 1 ;
     my $indicate_success_flag = 0 ;
     my $sub_name = (caller(0))[3] . "()" ;
@@ -251,6 +252,8 @@ sub main {
             $scalar_values{ $C_KEYWORD_RANDOM } = 'yes' ;
         } elsif (( $arg eq "-F" ) or ( $arg eq "--force-update" )) {
             $force_update_flag++ ;
+        } elsif (( $arg eq "-S" ) or ( $arg eq "--show-ip" )) {
+            $show_ip_num_flag++ ;
         } elsif (( $arg eq "-p" ) or ( $arg eq "--provider" )) {
             $scalar_values{ $C_KEYWORD_PROVIDER } = $ARGV[ ++$i ] ;
         } elsif (( $arg eq "-t" ) or ( $arg eq "--timeout" )) {
@@ -281,13 +284,13 @@ sub main {
     # and read our config file, so we can see defaults in the usage printed
 
     if ( $help_flag ) {
-        printf "usage: %s [option]*\n%s %s %s %s %s %s %s %s %s %s %s %s %s %s",
+        printf "usage: %s [option]*\n%s %s %s %s %s %s %s %s %s %s %s %s %s %s %s",
             $G_progname,
             "\t[-c|--config file]   (config-file (default=$config_file)\n",
             "\t[-d|--debug]         (debugging output)\n",
             "\t[-h|--help]          (help)\n",
             "\t[-f|--ip-file file]  (IP-file (default=$ip_file))\n",
-            "\t[-i|--ip-num IP#]    (IP number)\n",
+            "\t[-i|--ip-num IP#]    (use this IP number instead of lookup)\n",
             "\t[-l|--lib-dir str]   (library directory (default=$lib_dir))\n",
             "\t[-o|--only host]     (restrict to only this host given))\n",
             "\t[-n|--no-save-ip]    (don't save the IP)\n",
@@ -296,7 +299,8 @@ sub main {
             "\t[-t|--timeout num]   (timeout (default=$timeout secs))\n",
             "\t[-p|--provider str]  (DDNS provider (default=$provider))\n",
             "\t[-F|--force-update]  (force DDNS update)\n",
-            "\t[-V|--version]       (print version of this program)\n" ;
+            "\t[-S|--show-ip]       (show current IP number and exit)\n",
+            "\t[-V|--version]       (print version ($G_version))\n" ;
 
         return(0) ;
     }
@@ -358,6 +362,12 @@ sub main {
         }
     }
     dprint( "$sub_name: our Internet number is $ip_number" ) ;
+
+    # if all we want to know is our current IP number, print it and exit
+    if ( $show_ip_num_flag ) {
+        print "$ip_number\n" ;
+        return(0) ;
+    }
 
     my $old_ip_num = get_old_ip( $ip_file ) ;
 
@@ -947,6 +957,10 @@ This option will force an update at the DNS provider even if the program
 determines that your IP address has not changed.  Note that for some providers,
 like zoneedit, if it sees that the IP number is already that value, then it
 may return an error saying that.
+
+=head2 -S|--show-ip
+
+Print out our current IP number and exit
 
 =head2 -V|--version
 

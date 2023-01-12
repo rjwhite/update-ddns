@@ -47,7 +47,7 @@ This will print the options available:
         [-d|--debug]         (debugging output)
         [-h|--help]          (help)
         [-f|--file file]     (IP-file (default=/home/userid/etc/IP-number))
-        [-i|--ip-num IP#]    (IP number)
+        [-i|--ip-num IP#]    (use this IP number instead of lookup)
         [-l|--lib-dir str]   (library directory (default=/home/userid/lib/Perl))
         [-o|--only host]     (restrict to only this host given))
         [-n|--no-save-ip]    (don't save the IP)
@@ -56,7 +56,8 @@ This will print the options available:
         [-t|--timeout num]   (timeout (default=12 secs))
         [-p|--provider str]  (DDNS provider (default=zoneedit))
         [-F|--force-update]  (force DDNS update)
-        [-V|--version]       (print version of this program)
+        [-S|--show-ip]       (show current IP number and exit)
+        [-V|--version]       (print version (1.2.1))
 
 This will provide an indication to STDOUT when the program was successful.
 Normally it is silent with success.  But given the very few times your dynamic

@@ -86,3 +86,11 @@
           methods, it will still end with the message:
                 "...unable to get our IP number from Internet"
           so it will now be clear if it worked or failed.
+
+1.2.1   Jan 11, 2023
+    update-ddns.plx:
+    man/man1/update-ddns.1:
+        - added a -S|--show-ip option to just print our current IP number
+          and then exit
+    README.md:
+        - updated usage example
