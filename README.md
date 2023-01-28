@@ -62,7 +62,7 @@ This will print the options available:
         [-E|--enable]        (remove lock file (/home/userid/etc/update-ddns-lockfile))
         [-F|--force-update]  (force DDNS update)
         [-S|--show-ip]       (show current IP number and exit)
-        [-V|--version]       (print version (1.2.1))
+        [-V|--version]       (print version (1.3))
 
 This will provide an indication to STDOUT when the program was successful.
 Normally it is silent with success.  But given the very few times your dynamic
