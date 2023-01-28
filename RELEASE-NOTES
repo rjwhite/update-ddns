@@ -94,3 +94,41 @@
           and then exit
     README.md:
         - updated usage example
+
+1.3     Jan 28, 2023
+    update-ddns.plx:
+        - added options -D/--disable and -E/--enable to create/remove a
+          lock file that will prevent update-ddns from updating a changed
+          IP number
+        - if the 'vpn-test' method exists in the new 'disable' section of
+          the config file, then if tghat program returns 'vpn', then it
+          will prevent update-ddns updating a changed IP address since it
+          will be a temporary VPN address that should be ignored
+        - changed the timestamp in the saved IP file from GMT to local time
+        - replaced routine save_old_ip() with a generic create_file() routine
+          used for both saving the old IP number and creating a lock file for
+          the new --enable and --disable options.
+        - if there is a 'log-file' in the 'files' section of the config file,
+          then a log entry will be made of any IP changes
+        - updated perldoc info
+        - have options print out in alphabtical order with --help option
+    test-for-vpn.sh:
+        - created to test for VPN - used by config. See 'vpn-test' in config
+    SAMPLE-update-ddns.conf:
+        - renamed from update-ddns.conf.  Done so it doesn't cause
+          confusion running update-ddns from the source directory
+          and using the sample config file instead of the real one.
+        - added section 'disable' with methods 'lock-file' and 'vpn-test'
+        - added log-file in 'files' section
+    Makefile:
+        - removed installation of the config file.  Must now be installed
+          manually to ensure a proper config file is created using
+          SAMPLE-update-ddns.conf.  See README.first for instructions.
+        - added install of test-for-vpn.sh
+    man/man1/update-ddns.1:
+        - document new behaviour of disabling the update of IP number and
+          logging and explain disabling of IP update using the new methods
+    README.first:
+        - replaced section about config file installation.
+    README.md:
+        - updated usage and config file examples

@@ -69,6 +69,14 @@ Change the timeout to the given value. The hard-coded default is 30
 seconds. This is over-ridden by any value in the config file given by 'timeout'.
 This option will override them both.
 .TP
+\fB\-D|--disable\fR
+Disable update-ddns from looking up or changing an IP address, by creating
+a lock file, that is set in the config file.
+.TP
+\fB\-E|--enable\fR
+Remove the lock-file created by the -D/--disable option, allowing
+update-ddns to look up and update an IP number
+.TP
 \fB\-F|--force-update\fR
 This option will force an update at the DNS provider even if the program
 determines that your IP address has not changed. Note that for some
@@ -131,6 +139,28 @@ modified to use their expected URL input and to process their output to
 determine success or failure.  See section \fISUPPORT FOR OTHER DNS PROVIDERS\fR
 .PP
 Use -h or --help for options
+.SH DISABLING UPDATE OF IP NUMBER
+There are two ways of disabling update-ddns from updating
+an IP number. You might want to do this when you have update-ddns set up
+to run regularly from the cron and you are using a VPN for a short time
+which causes your IP number to change and you don't want update-ddns to
+update your DNS records with that temporarily assigned IP number.
+.PP
+The first method uses the option -D/--disable to create a lock-file. If
+update-ddns sees that lock-file, it will exit. You can then later remove
+that lock-file with the option -E/--enable. So, use the --disable option,
+set up your VPN, do your work, shut down VPN, use the --enable option.
+These options are available for use if there is a 'lock-file' set up in
+the optional 'disable' section of the config file.
+.PP
+The second method is preferred in that you don't have to remember to again
+use the --enable option after using --disable and it is all automatic. You
+won't need the --disable and --enable options. If a 'vpn-test' keyword in
+the 'disable' section of the config file is set to a program that will
+return the string 'vpn' if it detects a VPN is in use, then update-ddns
+will exit before attempting to update any DNS records. Typically this
+program would look at output from running ifconfig and looking for an
+interface that indicates VPN usage.
 .SH SUPPORT FOR OTHER DNS PROVIDERS
 The config file specifies a 'service-provider'. It can be any string,
 ideally the name of your provider. For eg: 'zoneedit'. It uses this string
@@ -224,6 +254,7 @@ hosts:
 files:
     save-ip-number      = /home/my-userid/etc/update-ddns--IP-number
     library-directory   = /home/my-userid/lib/Perl
+    log-file            = /home/my-userid/logs/update-ddns.log
 
 # The 'service-provider' is the name of the library found in your 
 # library-directory.  So 'zoneedit' will be zoneedit.pl
@@ -235,6 +266,18 @@ protocol:
 
 timeout:
     timeout             = 20
+
+# two (optional) methods for disabling update-ddns from upating the IP if
+# it appears changed.  You might want to use either of these if you have
+# update-ddns set up to automatically run from the crontab, but you
+# occasionally use a VPN which causes your IP to temporarily change
+# The 'lock-file' method utilizes the -E/--enable and -D/--disable options.
+# The 'vpn-test' method runs a program and if it returns 'vpn', then it
+# will cause update-ddns to not update a changed IP number.
+
+disable:
+    lock-file           = /home/my-userid/etc/disable-update-ddns-lockfile
+    vpn-test            = /home/my-userid/bin/test-for-vpn
 .fi
 .SH ENVIRONMENT VARIABLES
 UPDATE_DDNS_CONFIG_FILE

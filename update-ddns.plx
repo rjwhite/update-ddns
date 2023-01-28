@@ -68,7 +68,7 @@ use LWP::UserAgent();
 
 # Globals 
 our $G_progname = $0 ;
-our $G_version  = "1.2.1" ;
+our $G_version  = "1.3" ;
 our $G_debug    = 0 ;
 
 # Constants
@@ -83,6 +83,7 @@ my $C_SECTION_GET_IP    = 'get-ip-number' ;
 my $C_SECTION_HOSTS     = 'hosts' ;
 my $C_SECTION_FILES     = 'files' ;
 my $C_SECTION_PROTOCOL  = 'protocol' ;
+my $C_SECTION_DISABLE   = 'disable' ;
 
 my $C_KEYWORD_USERID    = 'userid' ;
 my $C_KEYWORD_PASS      = 'password' ;
@@ -93,6 +94,9 @@ my $C_KEYWORD_PROVIDER  = 'service-provider' ;
 my $C_KEYWORD_IP_FILE   = 'save-ip-number' ;
 my $C_KEYWORD_TIMEOUT   = 'timeout' ;
 my $C_KEYWORD_LIB_DIR   = 'library-directory' ;
+my $C_KEYWORD_PROGRAM   = 'vpn-test' ;
+my $C_KEYWORD_LOCK_FILE = 'lock-file' ;
+my $C_KEYWORD_LOG_FILE  = 'log-file' ;
 
 $G_progname     =~ s/^.*\/// ;
 
@@ -110,6 +114,8 @@ sub main {
     my $ip_number = undef ;
     my $get_ip_via_Internet = 1 ;
     my $help_flag    = 0 ;
+    my $disable_flag = 0 ;
+    my $enable_flag = 0 ;
     my $force_update_flag = 0 ;
     my $only_hosts_flag = 0 ;
     my $show_ip_num_flag = 0 ;
@@ -208,7 +214,7 @@ sub main {
                     my $msg = "updating $keyword: \'$old_value\' -> \'$value\'" ;
                     dprint( "$sub_name: $msg" ) ;
                 } else {
-                    dprint( "$sub_name: adding value \'$value\' to $keyword" ) ;
+                    dprint( "$sub_name: adding value \'$value\' to \'$keyword\'" ) ;
                 }
                 $scalar_values{ $keyword } = $value ;
             }
@@ -229,6 +235,10 @@ sub main {
             $config_file = $ARGV[ ++$i ] ;      # already done above
         } elsif (( $arg eq "-h" ) or ( $arg eq "--help" )) {
             $help_flag++ ;
+        } elsif (( $arg eq "-E" ) or ( $arg eq "--enable" )) {
+            $enable_flag++ ;
+        } elsif (( $arg eq "-D" ) or ( $arg eq "--disable" )) {
+            $disable_flag++ ;
         } elsif (( $arg eq "-n" ) or ( $arg eq "--no-save-ip" )) {
             $save_ip_to_file_flag = 0 ;
         } elsif (( $arg eq "-s" ) or ( $arg eq "--show-success" )) {
@@ -271,33 +281,42 @@ sub main {
             return(1) ;
         }
     }
-    # these values should now be set, either from defaults, or from the
-    # config file over-riding them.
+    # most of these values should now be set, either from defaults, or
+    # from the config file over-riding them.  Some are optional and
+    # will end up undefined here and need to be tested before use.
 
-    my $ip_file   = $scalar_values{ $C_KEYWORD_IP_FILE } ;
-    my $randomize = $scalar_values{ $C_KEYWORD_RANDOM } ;
-    my $provider  = $scalar_values{ $C_KEYWORD_PROVIDER } ;
-    my $timeout   = $scalar_values{ $C_KEYWORD_TIMEOUT } ;
-    my $lib_dir   = $scalar_values{ $C_KEYWORD_LIB_DIR } ;
+    my $ip_file      = $scalar_values{ $C_KEYWORD_IP_FILE } ;
+    my $randomize    = $scalar_values{ $C_KEYWORD_RANDOM } ;
+    my $provider     = $scalar_values{ $C_KEYWORD_PROVIDER } ;
+    my $timeout      = $scalar_values{ $C_KEYWORD_TIMEOUT } ;
+    my $lib_dir      = $scalar_values{ $C_KEYWORD_LIB_DIR } ;
+    my $lock_file    = $scalar_values{ $C_KEYWORD_LOCK_FILE } ;  # optional
+    my $log_file     = $scalar_values{ $C_KEYWORD_LOG_FILE } ;   # optional
+    my $vpn_program  = $scalar_values{ $C_KEYWORD_PROGRAM } ;    # optional
 
     # we defer printing out the help info till after we have set defaults
     # and read our config file, so we can see defaults in the usage printed
 
     if ( $help_flag ) {
-        printf "usage: %s [option]*\n%s %s %s %s %s %s %s %s %s %s %s %s %s %s %s",
-            $G_progname,
+        my $lf = $lock_file ;
+        $lf = '<not defined>' if ( not defined( $lock_file )) ;
+
+        printf  "usage: %s [option]*\n", $G_progname ;
+        printf "%s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s",
             "\t[-c|--config file]   (config-file (default=$config_file)\n",
             "\t[-d|--debug]         (debugging output)\n",
-            "\t[-h|--help]          (help)\n",
             "\t[-f|--ip-file file]  (IP-file (default=$ip_file))\n",
+            "\t[-h|--help]          (help)\n",
             "\t[-i|--ip-num IP#]    (use this IP number instead of lookup)\n",
             "\t[-l|--lib-dir str]   (library directory (default=$lib_dir))\n",
-            "\t[-o|--only host]     (restrict to only this host given))\n",
             "\t[-n|--no-save-ip]    (don't save the IP)\n",
+            "\t[-o|--only host]     (restrict to only this host given))\n",
+            "\t[-p|--provider str]  (DDNS provider (default=$provider))\n",
             "\t[-r|--randomize]     (randomize the method to get ip number)\n",
             "\t[-s|--show-success]  (indicate if successful.  normally silent)\n",
             "\t[-t|--timeout num]   (timeout (default=$timeout secs))\n",
-            "\t[-p|--provider str]  (DDNS provider (default=$provider))\n",
+            "\t[-D|--disable]       (create lock file ($lf))\n",
+            "\t[-E|--enable]        (remove lock file ($lf))\n",
             "\t[-F|--force-update]  (force DDNS update)\n",
             "\t[-S|--show-ip]       (show current IP number and exit)\n",
             "\t[-V|--version]       (print version ($G_version))\n" ;
@@ -305,14 +324,56 @@ sub main {
         return(0) ;
     }
 
-    if ( ! -d $lib_dir ) {
-        print STDERR "$G_progname: missing library directory: $lib_dir\n" ;
-        return(1) ;
+    # options --enable and --disable are useless if no lock file defined
+    if ( $disable_flag or $enable_flag ) {
+        if ( not defined( $lock_file )) {
+            my $err = "No lock file is defined in config file" ;
+            print STDERR "$G_progname: $err\n" ;
+            return(1) ;
+        }
+    }
+
+    # option -D/--disable.  create a lock file to prevent IP update
+    if ( $disable_flag ) {
+        if ( ! -f $lock_file ) {
+            return(1) if ( create_file( $lock_file, "lock file" )) ;
+            print "lock file created: $lock_file\n" ;
+        } else {
+            print "lock file already exists: $lock_file\n" ;
+        }
+        return(0) ;
+    }
+
+    # option -E/--enable.   remove the lock file preventing IP update
+    if ( $enable_flag ) {
+        if ( -f $lock_file ) {
+            if ( unlink( $lock_file ) == 0 ) {
+                my $err = "unable to remove lock file $lock_file: $!" ;
+                print STDERR "$G_progname: $err\n" ;
+                return(1) ;
+            } else {
+                print "removed lock file: $lock_file\n" ;
+            }
+        } else {
+            print "ignoring lock file that doesn't exist: $lock_file\n" ;
+        }
+        return(0) ;
+    }
+
+    # see if we have disabled IP update by previously using --disable option
+    if (( defined( $lock_file )) and ( -f $lock_file )) {
+        my $msg = "quitting because we found a lock file: $lock_file" ;
+        dprint( "$sub_name: $msg" ) ;
+        return(0) ;
     }
 
     # need to load the routine specifically for the provider needed
     # if we can't load the library, there is no point continuing
 
+    if ( ! -d $lib_dir ) {
+        print STDERR "$G_progname: missing library directory: $lib_dir\n" ;
+        return(1) ;
+    }
     if ( load_library( $lib_dir, $provider )) {
         print STDERR "$G_progname: can't load library for \'$provider\'\n" ;
         print STDERR "$G_progname: need to supply library in $lib_dir\n" ;
@@ -369,6 +430,12 @@ sub main {
         return(0) ;
     }
 
+    # test to see if VPN is running.  If so, bail out now
+    if ( check_for_vpn( $vpn_program, $timeout )) {
+        dprint( "$sub_name: VPN running.  Quit." ) ;
+        return(0) ;
+    }
+
     my $old_ip_num = get_old_ip( $ip_file ) ;
 
     my $ip_num_changed = 0 ;
@@ -380,7 +447,9 @@ sub main {
             dprint( "$sub_name: $msg" ) ;
             $ip_num_changed++ ;
             if ( $save_ip_to_file_flag ) {
-                return(1) if ( save_old_ip( $ip_number, $ip_file ) ) ;
+                if ( create_file( $ip_file, "saved IP number", $ip_number )) {
+                    return(1) ;
+                }
             }
         } else {
             dprint( "$sub_name: IP number has not changed." ) ;
@@ -388,7 +457,10 @@ sub main {
     } else {
         print STDERR "$G_progname: initializing $ip_file\n" ;
         if ( $save_ip_to_file_flag ) {
-            return(1) if ( save_old_ip( $ip_number, $ip_file ) ) ;
+            if ( create_file( $ip_file, "saved IP number", $ip_number )) {
+                return(1) ;
+            }
+            return(0) ;     # 1st time initialization and exit
         }
     }
 
@@ -411,10 +483,25 @@ sub main {
             if ( update_ddns( $user, $pass, $host, $ip_number, $timeout )) {
                 $num_errs++ ;
             } else {
+                my $msg = "updated $host from $old_ip_num to $ip_number" ;
+
                 # seems to have gone OK.  normally we are silent about it
                 if ( $indicate_success_flag ) {
-                    my $msg = "updated $host from $old_ip_num to $ip_number" ;
                     print "$G_progname: $msg\n" ;
+                }
+
+                # see if we are keeping a log file
+                if ( defined( $log_file )) {
+                    my $fh ;
+                    if ( open( $fh, ">>", "$log_file")) {
+                        my $dayt = localtime() ;
+                        chomp( $dayt ) ;
+                        print $fh "$msg on $dayt\n" ;
+                        close( $fh ) ;
+                    } else {
+                        print STDERR "$G_progname: $log_file: $!\n" ;
+                        # keep going - don't return or exit - just a warning
+                    }
                 }
             }
         }
@@ -428,6 +515,60 @@ sub main {
     } else {
         return(0) ;
     }
+}
+
+
+# test if currently running a VPN
+#
+# Arguments:
+#   1:  command to run to test for VPN
+#   2:  timeout in seconds - in case a lookup hangs
+# Returns:
+#   0:  no VPN detected
+#   1:  VPN running
+# Globals:
+#   $G_progname
+
+sub check_for_vpn {
+    my $command = shift ;
+    my $timeout = shift ;
+    
+    my $sub_name = (caller(0))[3] . "()" ;
+
+    # return NO VPN if no test command given
+    return(0) if ( not defined( $command )) ;
+
+    $timeout = 30 if ( not defined( $timeout )) ;
+
+    my @output = () ;
+    my @errors = () ;
+    my %options = (
+        'timeout'  => $timeout,      # seconds
+        'stderr'   => $STDIN_AND_STDOUT_SEPARATE,
+    ) ;
+    dprint( "$sub_name: running command: \'$command\'" ) ;
+    my $errs = run_command_wait( $command, \@output, \@errors, \%options ) ;
+    if ( $errs ) {
+        foreach my $err ( @errors ) {
+            chomp( $err ) ;
+            print STDERR "$G_progname: $err\n" ;
+            print STDERR "$G_progname: command run was: $command\n" ;
+        }
+        # keep going anyway
+    }
+    if ( @output == 0 ) {
+        dprint( "$sub_name: run_command_wait() returned no output" ) ;
+        return(0) ;
+    }
+
+    my $first_line = $output[0] ;
+    chomp( $first_line ) ;
+    dprint( "$sub_name: run_command_wait() returned: \'$first_line\'" ) ;
+    if ( $first_line =~ /^vpn$/i ) {
+        dprint( "$sub_name: running VPN" ) ;
+        return(1) ;
+    }
+    return(0) ;
 }
 
 
@@ -481,35 +622,41 @@ sub get_old_ip {
 }
 
 
-# save IP number saved into a file
-# The file can contain comments beginning with '#'
+# create a file.  Maybe an IP file, maybe a lock file...
+# If the 3rd arg (info) exists, write it into the file after
+# writing a comment indicating the reason for the file using
+# the 2nd arg (message).
 #
 # Arguments:
-#   1:      IP number
-#   2:      filename
+#   1:  filename
+#   2:  message about contents (IP) or purpose (lock file)
+#   3:  (optional) data to write (like an IP number)
 # Returns:
 #   0:      OK
 #   1:      not OK
 # Globals:
 #   $G_progname
 
-sub save_old_ip {
-    my $ip_num = shift ;
+sub create_file {
     my $file = shift ;
+    my $msg  = shift ;
+    my $info = shift ;
 
     my $sub_name = (caller(0))[3] . "()" ;
     my $fd  ;
     if ( ! open( $fd, ">", $file )) {
-        print STDERR "$G_progname: warning: can't open for write: $file\n" ;
+        print STDERR "$G_progname: can't create $file: $!\n" ;
         return(1);
     }
 
-    my $dayt = gmtime() ;
-    print $fd "# saved IP number from program $G_progname on $dayt\n\n" ;
-    print $fd "$ip_num\n" ;
+    my $dayt = localtime() ;
+    print $fd "# ${msg} for program $G_progname created on $dayt\n" ;
 
-    dprint( "$sub_name: IP $ip_num written to $file" ) ;
+    print $fd "\n$info\n" if ( defined( $info )) ;
+
     close( $fd ) ;
+
+    dprint( "$sub_name: ${msg} file created: $file" ) ;
     return(0) ;
 }
 
@@ -951,6 +1098,16 @@ Change the timeout to the given value.  The hard-coded default is 30
 seconds.  This is over-ridden by any value in the config file given by
 'timeout'.  This option will override them both.
 
+=head2 -D|--disable
+
+Disable update-ddns from looking up or changing an IP address, by creating
+a lock file, that is set in the config file.
+
+=head2 -E|--enable
+
+Remove the lock-file created by the -D/--disable option, allowing update-ddns
+to look up and update an IP number
+
 =head2 -F|--force-update
 
 This option will force an update at the DNS provider even if the program
@@ -966,6 +1123,30 @@ Print out our current IP number and exit
 
 Print the version numbers of this program as well as the Moxad modules that
 it uses.
+
+=head1 DISABLING UPDATE OF IP NUMBER
+
+There are two ways of disabling update-ddns from updating an IP number.
+You might want to do this when you have update-ddns set up to run
+regularly from the cron and you are using a VPN for a short time which
+causes your IP number to change and you don't want update-ddns to update
+your DNS records with that temporarily assigned IP number.
+
+The first method uses the option -D/--disable to create a lock-file.  If
+update-ddns sees that lock-file, it will exit.  You can then later remove
+that lock-file with the option -E/--enable.  So, use the --disable option,
+set up your VPN, do your work, shut down VPN, use the --enable option.
+These options are available for use if there is a 'lock-file' set up in
+the optional 'disable' section of the config file.
+
+The second method is preferred in that you don't have to remember to
+again use the --enable option after using --disable and it is all automatic.
+You won't need the --disable and --enable options.
+If a 'vpn-test' keyword in the 'disable' section of
+the config file is set to a program that will return the string 'vpn' if
+it detects a VPN is in use, then update-ddns will exit before attempting
+to update any DNS records.  Typically this program would look at output from
+running ifconfig and looking for an interface that indicates VPN usage.
 
 =head1 SUPPORT FOR OTHER DNS PROVIDERS
 
@@ -1068,6 +1249,7 @@ if the file exists.
     files:
         save-ip-number      = /home/my-userid/etc/update-ddns--IP-number
         library-directory   = /home/my-userid/lib/Perl
+        log-file            = /home/my-userid/logs/update-ddns.log
 
     # The 'service-provider' is the name of the library found in your 
     # library-directory.  So 'zoneedit' will be zoneedit.pl
@@ -1079,6 +1261,10 @@ if the file exists.
 
     timeout:
         timeout             = 20
+
+    disable:
+        lock-file           = /home/my-userid/etc/disable-update-ddns-lockfile
+        vpn-test            = /home/my-userid/bin/test-for-vpn
 
 =head1 SEE ALSO
 

@@ -30,6 +30,11 @@ the value found in that file to your current assigned IP number.
 
 Note that at this time, only IPv4 is supported.
 
+You can specify in the config file a program 'vpn-test' to run, to see
+if you are currently running a VPN that has changed your IP number.  If it
+determines a VPN is in use, it will prevent update-ddns from updating your
+DNS records for that temporary IP number.
+
 Note that currently the only DNS service provider supported is Zoneedit.
 But that library/function can be copied to a new library and slightly
 modified to use their expected URL input and to process their output
@@ -40,21 +45,21 @@ Use -h or --help for options
 ## Example usages
 This will print the options available:
 
-    % update-ddns --help
-
     usage: update-ddns.plx [option]*
         [-c|--config file]   (config-file (default=./update-ddns.conf)
         [-d|--debug]         (debugging output)
-        [-h|--help]          (help)
         [-f|--file file]     (IP-file (default=/home/userid/etc/IP-number))
+        [-h|--help]          (help)
         [-i|--ip-num IP#]    (use this IP number instead of lookup)
         [-l|--lib-dir str]   (library directory (default=/home/userid/lib/Perl))
-        [-o|--only host]     (restrict to only this host given))
         [-n|--no-save-ip]    (don't save the IP)
+        [-o|--only host]     (restrict to only this host given))
+        [-p|--provider str]  (DDNS provider (default=zoneedit))
         [-r|--randomize]     (randomize the method to get ip number)
         [-s|--show-success]  (indicate if successful.  normally silent)
         [-t|--timeout num]   (timeout (default=12 secs))
-        [-p|--provider str]  (DDNS provider (default=zoneedit))
+        [-D|--disable]       (create lock file (/home/userid/etc/update-ddns-lockfile))
+        [-E|--enable]        (remove lock file (/home/userid/etc/update-ddns-lockfile))
         [-F|--force-update]  (force DDNS update)
         [-S|--show-ip]       (show current IP number and exit)
         [-V|--version]       (print version (1.2.1))
@@ -168,6 +173,7 @@ if the file exists.
     files:
         save-ip-number      = /home/my-userid/etc/update-ddns--IP-number
         library-directory   = /home/my-userid/lib/Perl
+        log-file            = /home/my-userid/logs/update-ddns.log
 
     # The 'service-provider' is the name of the library found in your
     # library-directory.  So 'zoneedit' will be zoneedit.pl
@@ -179,3 +185,7 @@ if the file exists.
 
     timeout:
         timeout             = 20
+
+    disable:
+        lock-file           = /home/my-userid/etc/update-ddns-lockfile
+        vpn-test            = /home/my-userid/bin/test-for-vpn  nordtun
