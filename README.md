@@ -12,7 +12,7 @@ number, provided by your ISP, changes.
 It can update several hostnames in a single run for different domains,
 each which may or may not have different authentication userid/passwords
 for a single new IP number.  For eg: for the 3 hosts in the 3 domains
-of home.moxad.com, home.moxad.net and home.moxad.ca.  It keeps track
+of home.my-domain.com, home.my-domain.net and home.my-domain.ca.  It keeps track
 of the IP number from the last run and if there is no change, then the
 program does nothing and exits.
 
@@ -43,37 +43,42 @@ to determine success or failure.  See section "Support for other DNS providers"
 Use -h or --help for options
 
 ## Example usages
-This will print the options available:
+The --help or -h option will print the options available:
 
-    usage: update-ddns.plx [option]*
-        [-c|--config file]   (config-file (default=./update-ddns.conf)
-        [-d|--debug]         (debugging output)
-        [-f|--file file]     (IP-file (default=/home/userid/etc/IP-number))
-        [-h|--help]          (help)
-        [-i|--ip-num IP#]    (use this IP number instead of lookup)
-        [-l|--lib-dir str]   (library directory (default=/home/userid/lib/Perl))
-        [-n|--no-save-ip]    (don't save the IP)
-        [-o|--only host]     (restrict to only this host given))
-        [-p|--provider str]  (DDNS provider (default=zoneedit))
-        [-r|--randomize]     (randomize the method to get ip number)
-        [-s|--show-success]  (indicate if successful.  normally silent)
-        [-t|--timeout num]   (timeout (default=12 secs))
-        [-D|--disable]       (create lock file (/home/userid/etc/update-ddns-lockfile))
-        [-E|--enable]        (remove lock file (/home/userid/etc/update-ddns-lockfile))
-        [-F|--force-update]  (force DDNS update)
-        [-S|--show-ip]       (show current IP number and exit)
-        [-V|--version]       (print version (1.3))
+        % update-ddns --help
 
-This will provide an indication to STDOUT when the program was successful.
-Normally it is silent with success.  But given the very few times your dynamic
-IP address will change, it will be rare and you may wish to know it changed.
+        usage: update-ddns [option]*
+            [-c|--config file]   (config-file (default=./update-ddns.conf)
+            [-d|--debug]         (debugging output)
+            [-f|--file file]     (IP-file (default=/home/userid/etc/IP-number))
+            [-h|--help]          (help)
+            [-i|--ip-num IP#]    (use this IP number instead of lookup)
+            [-l|--lib-dir str]   (library directory (default=/home/userid/lib/Perl))
+            [-n|--no-save-ip]    (don't save the IP)
+            [-o|--only host]     (restrict to only this host given))
+            [-p|--provider str]  (DDNS provider (default=zoneedit))
+            [-r|--randomize]     (randomize the method to get ip number)
+            [-s|--show-success]  (indicate if successful.  normally silent)
+            [-t|--timeout num]   (timeout (default=12 secs))
+            [-D|--disable]       (create lock file (/home/userid/etc/update-ddns-lockfile))
+            [-E|--enable]        (remove lock file (/home/userid/etc/update-ddns-lockfile))
+            [-F|--force-update]  (force DDNS update)
+            [-S|--show-ip]       (show current IP number and exit)
+            [-V|--version]       (print version (1.3))
 
-    % update-ddns --show-success
+The following will provide an indication to STDOUT when the program was successful.
+Normally it is silent with success, but given the very few times your dynamic
+IP address will change, you may wish to be alerted when it happens.  
+You can also keep a log of changes via the optional 'log-file' given in the config file.
 
-This will only try to update the two hostnames of test.moxad.ca and test.moxad.net
-out of the entire list given by 'hostnames' in the config file
+        % update-ddns --show-success
 
-    % update-ddns --only test.moxad.ca --only test.moxad.net
+The following will only try to update the two hostnames of **test.my-domain.ca**
+and **test.my-domain.net** out of the entire list given by 'hostnames' in the config file.  
+Multiple --only or -o options may be used, and the hosts can also be comma separated:
+
+        % update-ddns --only test.my-domain.ca --only test.my-domain.net
+        % update-ddns --o test.my-domain.ca,test.my-domain.net
 
 # Support for other DNS providers
 The config file specifies a 'service-provider'. It can be any string,
@@ -146,10 +151,10 @@ if the file exists.
     # given for the userid.
 
     authentication:
-        userid   (array)    = my_userid
-        password (array)    = API-password-1, \
-                              API-password-2, \
-                              API-password-3
+        userid   (array)    = my-login-name
+        password (array)    = my-API-password-1, \
+                              my-API-password-2, \
+                              my-API-password-3
 
     # These are methods to use to get the IP number assigned by our ISP.
     # If randomize-methods is set to yes, then the program will pick
